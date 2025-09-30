@@ -200,7 +200,8 @@ def load_portfolio_data():
             return None, None, None, "No price data available"
         
         portfolio = Portfolio(assets_info, settings.INITIAL_CAPITAL)
-        portfolio_value = portfolio.calculate_value(price_data)
+        # Calculate portfolio value starting from project start date
+        portfolio_value = portfolio.calculate_value(price_data, start_date=settings.START_DATE)
         
         return assets_info, price_data, portfolio, portfolio_value
     except Exception as e:

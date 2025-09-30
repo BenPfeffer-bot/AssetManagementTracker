@@ -38,16 +38,22 @@ class Portfolio:
             
             self.shares[ticker] = num_shares
     
-    def calculate_value(self, price_data: pd.DataFrame) -> pd.Series:
+    def calculate_value(self, price_data: pd.DataFrame, start_date: str = None) -> pd.Series:
         """
         Calculate total portfolio value over time.
         
         Args:
             price_data: DataFrame with Date as index and ticker symbols as columns
+            start_date: Optional start date to filter from (YYYY-MM-DD format)
             
         Returns:
             Series with dates as index and portfolio value as values
         """
+        # Filter to start date if provided
+        if start_date:
+            start_ts = pd.Timestamp(start_date)
+            price_data = price_data[price_data.index >= start_ts]
+        
         portfolio_value = pd.Series(index=price_data.index, dtype=float)
         
         for date in price_data.index:

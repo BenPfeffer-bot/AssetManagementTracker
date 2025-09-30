@@ -64,7 +64,8 @@ def generate_report():
     
     # 5. Calculate portfolio value over time
     print("\n5. Calculating portfolio value...")
-    portfolio_value = portfolio.calculate_value(price_data)
+    # Calculate from project start date to ensure accurate initial value
+    portfolio_value = portfolio.calculate_value(price_data, start_date=settings.START_DATE)
     current_value = portfolio_value.iloc[-1]
     print(f"   Current portfolio value: ${current_value:,.2f}")
     
