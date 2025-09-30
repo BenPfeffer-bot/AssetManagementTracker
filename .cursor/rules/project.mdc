@@ -56,7 +56,6 @@ The initial portfolio is defined as follows. This should be the basis for `asset
     - `END_DATE = '2025-11-25'`
     - `INITIAL_CAPITAL = 100000` (or any other amount)
     - `ASSET_TICKERS = ['QQQ', 'IEMG', 'SHV', 'TLT', 'IAU']`
-    - `REPORT_EMAIL_RECIPIENT = 'ckharoubi@escp.eu'`
 
 ### 📂 `core/`
 - **`loader.py`**:

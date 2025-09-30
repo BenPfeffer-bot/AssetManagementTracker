@@ -27,8 +27,10 @@ Thumbs.db
 # Project specific
 *.log
 reports/charts/*.png
-data/prices.csv
 
 # Keep directory structure
 !reports/charts/.gitkeep
 !data/.gitkeep
+
+# Note: We keep data/prices.csv in git for demo purposes
+# In production, you may want to add it to .gitignore

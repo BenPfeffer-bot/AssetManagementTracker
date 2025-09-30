@@ -13,7 +13,7 @@ INITIAL_CAPITAL = 100000
 ASSET_TICKERS = ['QQQ', 'IEMG', 'SHV', 'TLT', 'IAU']
 
 # Reporting configuration
-REPORT_EMAIL_RECIPIENT = 'ckharoubi@escp.eu'
+
 REPORT_FREQUENCY = 'weekly'  # weekly reporting
 
 # Risk-free rate for Sharpe ratio calculation (annualized)

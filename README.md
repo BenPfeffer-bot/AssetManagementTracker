@@ -70,7 +70,31 @@ AssetManagementTracker/
 
 ## Usage
 
-### Fetch Market Data
+### 🌐 Interactive Web Dashboard (Recommended)
+
+Launch the interactive Streamlit dashboard for real-time portfolio tracking:
+
+```bash
+# Option 1: Using the startup script
+./run_dashboard.sh
+
+# Option 2: Direct command
+streamlit run app.py
+```
+
+The dashboard will automatically open in your browser at `http://localhost:8501`
+
+**Dashboard Features:**
+- 📊 Real-time portfolio metrics and visualizations
+- 📈 Interactive charts with Plotly
+- 💼 Detailed holdings analysis
+- 📉 Risk analytics and correlation matrices
+- 📥 Data export capabilities
+- 🔄 One-click data refresh
+
+### 📊 Command Line Interface
+
+#### Fetch Market Data
 
 ```bash
 python main.py --fetch-data
@@ -78,7 +102,7 @@ python main.py --fetch-data
 
 This command downloads historical price data for all assets and saves it to `data/prices.csv`.
 
-### Generate Report
+#### Generate Report
 
 ```bash
 python main.py --generate-report
@@ -89,7 +113,7 @@ This command generates a comprehensive performance report with:
 - Risk analytics (VaR, CVaR, correlations)
 - Professional charts and visualizations
 
-### Fetch Data and Generate Report
+#### Fetch Data and Generate Report
 
 ```bash
 python main.py --all
@@ -150,11 +174,11 @@ Example cron job (runs every Monday at 9 AM):
 - matplotlib
 - seaborn
 - Jinja2
+- streamlit
+- plotly
 
 ## License
 
 This project is for educational purposes.
 
-## Contact
 
-For questions or issues, please contact: ckharoubi@escp.eu
