@@ -1,0 +1,123 @@
+---
+description: AI instructions for building a portfolio management project in Python.
+globs: 
+alwaysApply: true
+---
+
+# Portfolio Management Project AI Guide
+
+## 1. Project Overview
+
+The main goal of this project is to build a Python application to track, analyze, and report on the performance of a financial portfolio. The project starts with a predefined asset allocation and will track its value weekly until November 25, 2025. The final output should be a weekly one-page report emailed to `ckharoubi@escp.eu`.
+
+**Key Dates:**
+- **Start Date:** September 23, 2025
+- **End Date:** November 25, 2025
+- **Reporting Frequency:** Weekly
+
+## 2. Initial Portfolio Allocation
+
+The initial portfolio is defined as follows. This should be the basis for `assets_info.json`.
+
+| Asset Class                  | Ticker | Weight | Initial Price (as of 23/09/2025) |
+| ---------------------------- | ------ | ------ | -------------------------------- |
+| US Tech Stocks               | QQQ    | 30%    | $597.79                          |
+| Emerging Markets Stocks      | IEMG   | 15%    | $66.18                           |
+| Short-Term US Treasury Bonds | SHV    | 18%    | $110.41                          |
+| Long-Term US Treasury Bonds  | TLT    | 22%    | $88.90                           |
+| Gold (Precious Metals)       | IAU    | 15%    | $71.10                           |
+
+## 3. Core Technologies & Libraries
+
+- **Language:** Python 3.x
+- **Key Libraries (`requirements.txt`):**
+  - `pandas`: For data manipulation and analysis.
+  - `numpy`: For numerical operations.
+  - `yfinance`: To fetch historical and current market data for the assets.
+  - `matplotlib` & `seaborn`: For data visualization.
+  - `PyPortfolioOpt`: (Optional) For portfolio optimization tasks.
+  - `Jinja2`: For rendering the HTML report template.
+
+## 4. File-by-File AI Instructions
+
+### 📂 `data/`
+- **`assets_info.json`**:
+  - **Purpose**: Store metadata for the portfolio assets.
+  - **Content**: Create a JSON array. Each object should represent an asset and contain keys like `name`, `ticker`, `asset_class`, `initial_weight`, and `initial_price`. Use the data from the table above.
+- **`prices.csv`**:
+  - **Purpose**: Store historical and weekly snapshot price data for the portfolio's assets.
+  - **Content**: The columns should be `Date`, followed by the ticker symbols (`QQQ`, `IEMG`, `SHV`, `TLT`, `IAU`). The first entry should be the prices from 2025-09-23. This file will be appended with new weekly data.
+
+### 📂 `config/`
+- **`settings.py`**:
+  - **Purpose**: Define global constants and configuration variables.
+  - **Content**:
+    - `START_DATE = '2025-09-23'`
+    - `END_DATE = '2025-11-25'`
+    - `INITIAL_CAPITAL = 100000` (or any other amount)
+    - `ASSET_TICKERS = ['QQQ', 'IEMG', 'SHV', 'TLT', 'IAU']`
+    - `REPORT_EMAIL_RECIPIENT = 'ckharoubi@escp.eu'`
+
+### 📂 `core/`
+- **`loader.py`**:
+  - **Purpose**: Load data from the `/data` directory.
+  - **Functions**:
+    - `load_asset_info()`: Reads `assets_info.json`.
+    - `load_price_data()`: Reads `prices.csv`, setting the 'Date' column as a datetime index.
+    - `fetch_market_data(tickers, start_date, end_date)`: Use `yfinance` to download historical data for the given tickers and save it to `prices.csv`.
+- **`portfolio.py`**:
+  - **Purpose**: Define the main `Portfolio` class.
+  - **Class `Portfolio`**:
+    - `__init__(self, assets_info, initial_capital)`: Initialize with asset details and starting capital. Calculate the initial number of shares for each asset based on weights and prices.
+    - `calculate_value(self, price_data)`: Calculate the total portfolio value over time using the historical price data. It should return a pandas Series with dates as index and portfolio value as values.
+- **`optimizer.py`** (Optional):
+  - **Purpose**: Implement portfolio optimization strategies.
+  - **Functions**: Could contain functions for Mean-Variance Optimization (e.g., maximizing Sharpe ratio) using `PyPortfolioOpt`.
+- **`rebalance.py`** (Optional):
+  - **Purpose**: Logic for rebalancing the portfolio back to target weights.
+
+### 📂 `analytics/`
+- **`performance.py`**:
+  - **Purpose**: Calculate key performance indicators (KPIs).
+  - **Functions**:
+    - `calculate_returns(portfolio_value_series)`: Calculate daily/weekly and cumulative returns.
+    - `calculate_volatility(returns_series)`: Calculate annualized volatility.
+    - `calculate_sharpe_ratio(returns_series, risk_free_rate)`: Calculate the Sharpe ratio.
+    - `calculate_max_drawdown(portfolio_value_series)`: Calculate the maximum drawdown.
+- **`risk.py`**:
+  - **Purpose**: Calculate risk metrics.
+  - **Functions**:
+    - `calculate_correlation_matrix(price_data)`: Compute and return the correlation matrix for the assets.
+    - `calculate_var(returns_series, confidence_level=0.95)`: Calculate Value at Risk (VaR).
+- **`visualizer.py`**:
+  - **Purpose**: Generate plots and charts for the report. All functions should save the generated chart as an image file (e.g., in a `reports/charts/` directory).
+  - **Functions**:
+    - `plot_portfolio_evolution(portfolio_value_series)`: Line chart of portfolio value over time.
+    - `plot_asset_allocation(assets_info)`: Pie chart of the initial asset allocation.
+    - `plot_correlation_heatmap(correlation_matrix)`: Heatmap of the asset correlation matrix.
+
+### 📂 `reports/`
+- **`onepager_generator.py`**:
+  - **Purpose**: Generate the final one-page report.
+  - **Logic**:
+    1. Load data using `loader.py`.
+    2. Create a `Portfolio` instance.
+    3. Run all calculations from `analytics/`.
+    4. Generate all visualizations from `visualizer.py`.
+    5. Render the `report_template.html` with all the data and paths to the generated charts.
+    6. (Optional) Convert the final HTML to a PDF or send it as an email body.
+- **`report_template.html`**:
+  - **Purpose**: An HTML template for the report.
+  - **Content**: Use Jinja2 templating syntax (e.g., `{{ variable }}`) to insert data like performance metrics and embed the charts (`<img src="path/to/chart.png">`).
+
+### 📂 `utils/`
+- **`helpers.py`**:
+  - **Purpose**: Miscellaneous utility functions.
+  - **Functions**: Could include a logger setup, functions to format numbers/currencies, or a function to send emails using `smtplib`.
+
+### 📄 `main.py`
+- **Purpose**: The main entry point to run the project.
+- **Logic**:
+  - Should be a simple script that calls the main function from `onepager_generator.py`.
+  - Can handle command-line arguments, for example, to specify a date or action (`--fetch-data`, `--generate-report`).
+

@@ -1,0 +1,37 @@
+[
+  {
+    "name": "US Tech Stocks",
+    "ticker": "QQQ",
+    "asset_class": "Equities",
+    "initial_weight": 0.30,
+    "initial_price": 597.79
+  },
+  {
+    "name": "Emerging Markets Stocks",
+    "ticker": "IEMG",
+    "asset_class": "Equities",
+    "initial_weight": 0.15,
+    "initial_price": 66.18
+  },
+  {
+    "name": "Short-Term US Treasury Bonds",
+    "ticker": "SHV",
+    "asset_class": "Fixed Income",
+    "initial_weight": 0.18,
+    "initial_price": 110.41
+  },
+  {
+    "name": "Long-Term US Treasury Bonds",
+    "ticker": "TLT",
+    "asset_class": "Fixed Income",
+    "initial_weight": 0.22,
+    "initial_price": 88.90
+  },
+  {
+    "name": "Gold (Precious Metals)",
+    "ticker": "IAU",
+    "asset_class": "Commodities",
+    "initial_weight": 0.15,
+    "initial_price": 71.10
+  }
+]
