@@ -29,10 +29,11 @@ st.set_page_config(
     page_title="Portfolio Tracker | Asset Management",
     page_icon="💼",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
+    # Streamlit does not have a direct background color param, so we use CSS below
 )
 
-# Enhanced Custom CSS with modern design
+# Enhanced Custom CSS with modern design and enforced white background
 st.markdown("""
     <style>
     /* Import Google Fonts */
@@ -41,8 +42,22 @@ st.markdown("""
     /* Global Styles */
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif;
+        background: #fff !important;
+        background-color: #fff !important;
     }
-    
+    body {
+        background: #fff !important;
+        background-color: #fff !important;
+    }
+    .stApp {
+        background: #fff !important;
+        background-color: #fff !important;
+    }
+    /* Main container background */
+    [data-testid="stAppViewContainer"] {
+        background: #fff !important;
+        background-color: #fff !important;
+    }
     /* Main Header */
     .main-header {
         font-size: 2.8rem;
@@ -372,8 +387,8 @@ def show_dashboard(assets_info, price_data, portfolio, portfolio_value):
             yaxis_title="Portfolio Value ($)",
             hovermode='x unified',
             template='plotly_white',
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
+            plot_bgcolor='#fff',
+            paper_bgcolor='#fff',
             font=dict(family='Inter', size=12),
             margin=dict(l=20, r=20, t=40, b=20)
         )
@@ -436,7 +451,9 @@ def show_dashboard(assets_info, price_data, portfolio, portfolio_value):
                 template='plotly_white',
                 showlegend=True,
                 legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
-                margin=dict(l=20, r=20, t=20, b=20)
+                margin=dict(l=20, r=20, t=20, b=20),
+                paper_bgcolor='#fff',
+                plot_bgcolor='#fff'
             )
             
             st.plotly_chart(fig, use_container_width=True)
@@ -489,7 +506,9 @@ def show_dashboard(assets_info, price_data, portfolio, portfolio_value):
                 yaxis_title="Drawdown (%)",
                 height=350,
                 template='plotly_white',
-                margin=dict(l=20, r=20, t=40, b=20)
+                margin=dict(l=20, r=20, t=40, b=20),
+                paper_bgcolor='#fff',
+                plot_bgcolor='#fff'
             )
             
             st.plotly_chart(fig, use_container_width=True)
@@ -521,7 +540,9 @@ def show_dashboard(assets_info, price_data, portfolio, portfolio_value):
                 yaxis_title="Frequency",
                 height=350,
                 template='plotly_white',
-                margin=dict(l=20, r=20, t=40, b=20)
+                margin=dict(l=20, r=20, t=40, b=20),
+                paper_bgcolor='#fff',
+                plot_bgcolor='#fff'
             )
             
             st.plotly_chart(fig, use_container_width=True)
@@ -572,7 +593,9 @@ def show_analytics(price_data, portfolio_value):
     fig.update_layout(
         height=500,
         template='plotly_white',
-        margin=dict(l=20, r=20, t=20, b=20)
+        margin=dict(l=20, r=20, t=20, b=20),
+        paper_bgcolor='#fff',
+        plot_bgcolor='#fff'
     )
     
     st.plotly_chart(fig, use_container_width=True)
@@ -605,7 +628,9 @@ def show_analytics(price_data, portfolio_value):
         template='plotly_white',
         hovermode='x unified',
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
-        margin=dict(l=20, r=20, t=60, b=20)
+        margin=dict(l=20, r=20, t=60, b=20),
+        paper_bgcolor='#fff',
+        plot_bgcolor='#fff'
     )
     
     st.plotly_chart(fig, use_container_width=True)
@@ -708,7 +733,9 @@ def show_holdings(assets_info, portfolio, price_data):
             barmode='group',
             template='plotly_white',
             legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
-            margin=dict(l=20, r=20, t=60, b=20)
+            margin=dict(l=20, r=20, t=60, b=20),
+            paper_bgcolor='#fff',
+            plot_bgcolor='#fff'
         )
         
         st.plotly_chart(fig, use_container_width=True)
@@ -730,7 +757,9 @@ def show_holdings(assets_info, portfolio, price_data):
             height=400,
             template='plotly_white',
             showlegend=False,
-            margin=dict(l=20, r=20, t=20, b=20)
+            margin=dict(l=20, r=20, t=20, b=20),
+            paper_bgcolor='#fff',
+            plot_bgcolor='#fff'
         )
         
         st.plotly_chart(fig, use_container_width=True)
