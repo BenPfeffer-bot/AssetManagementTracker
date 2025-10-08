@@ -23,6 +23,10 @@ from analytics.performance import (
     calculate_max_drawdown, calculate_total_return, calculate_annualized_return
 )
 from analytics.risk import calculate_correlation_matrix, calculate_var, calculate_cvar, calculate_sortino_ratio
+from analytics.markowitz import (
+    analyze_portfolio_markowitz, plot_efficient_frontier,
+    calculate_expected_returns, calculate_covariance_matrix
+)
 
 # Page configuration
 st.set_page_config(
@@ -243,7 +247,7 @@ def main():
         st.markdown("### 📍 Navigation")
         page = st.radio(
             "Select Page",
-            ["🏠 Dashboard", "📊 Analytics", "💼 Holdings", "📈 Data Explorer", "⚙️ Settings"],
+            ["🏠 Dashboard", "📊 Analytics", "💼 Holdings", "📈 Markowitz", "📊 Data Explorer", "⚙️ Settings"],
             label_visibility="collapsed"
         )
         
@@ -288,7 +292,9 @@ def main():
         show_analytics(price_data, portfolio_value)
     elif page == "💼 Holdings":
         show_holdings(assets_info, portfolio, price_data)
-    elif page == "📈 Data Explorer":
+    elif page == "📈 Markowitz":
+        show_markowitz(assets_info, price_data, portfolio)
+    elif page == "📊 Data Explorer":
         show_data_explorer(price_data, portfolio_value)
     elif page == "⚙️ Settings":
         show_settings()
@@ -811,6 +817,255 @@ def show_data_explorer(price_data, portfolio_value):
                 returns_df.describe().style.format("{:.4f}"),
                 use_container_width=True
             )
+
+
+def show_markowitz(assets_info, price_data, portfolio):
+    """Markowitz Modern Portfolio Theory analysis page"""
+    st.markdown('<p class="main-header">📈 Markowitz Portfolio Analysis</p>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-box">
+        <strong>Modern Portfolio Theory (MPT)</strong> by Harry Markowitz shows the relationship between risk and return.
+        The <strong>Efficient Frontier</strong> represents optimal portfolios offering the highest expected return for a given level of risk.
+    </div>
+    """, unsafe_allow_html=True)
+    
+    try:
+        # Get current weights
+        current_prices = {col: price_data[col].iloc[-1] for col in price_data.columns}
+        allocation_df = portfolio.get_current_allocation(current_prices)
+        current_weights = allocation_df['weight'].values
+        
+        # Perform Markowitz analysis
+        with st.spinner("Analyzing portfolio using Markowitz theory..."):
+            analysis_results = analyze_portfolio_markowitz(
+                price_data,
+                current_weights,
+                settings.RISK_FREE_RATE
+            )
+        
+        # Display key metrics
+        st.markdown('<h3 class="sub-header">Portfolio Comparison</h3>', unsafe_allow_html=True)
+        
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.markdown("#### 📊 Current Portfolio")
+            current = analysis_results['current_portfolio']
+            st.metric("Expected Return", f"{current['return']*100:.2f}%")
+            st.metric("Volatility (Risk)", f"{current['volatility']*100:.2f}%")
+            st.metric("Sharpe Ratio", f"{current['sharpe_ratio']:.2f}")
+        
+        with col2:
+            st.markdown("#### ⭐ Max Sharpe Portfolio")
+            max_sharpe = analysis_results['optimal_portfolios']['max_sharpe']
+            st.metric(
+                "Expected Return", 
+                f"{max_sharpe['return']*100:.2f}%",
+                delta=f"{(max_sharpe['return']-current['return'])*100:.2f}%"
+            )
+            st.metric(
+                "Volatility (Risk)", 
+                f"{max_sharpe['volatility']*100:.2f}%",
+                delta=f"{(max_sharpe['volatility']-current['volatility'])*100:.2f}%",
+                delta_color="inverse"
+            )
+            st.metric(
+                "Sharpe Ratio", 
+                f"{max_sharpe['sharpe_ratio']:.2f}",
+                delta=f"{(max_sharpe['sharpe_ratio']-current['sharpe_ratio']):.2f}"
+            )
+        
+        with col3:
+            st.markdown("#### 🛡️ Min Volatility Portfolio")
+            min_vol = analysis_results['optimal_portfolios']['min_vol']
+            st.metric(
+                "Expected Return", 
+                f"{min_vol['return']*100:.2f}%",
+                delta=f"{(min_vol['return']-current['return'])*100:.2f}%"
+            )
+            st.metric(
+                "Volatility (Risk)", 
+                f"{min_vol['volatility']*100:.2f}%",
+                delta=f"{(min_vol['volatility']-current['volatility'])*100:.2f}%",
+                delta_color="inverse"
+            )
+            st.metric(
+                "Sharpe Ratio", 
+                f"{min_vol['sharpe_ratio']:.2f}",
+                delta=f"{(min_vol['sharpe_ratio']-current['sharpe_ratio']):.2f}"
+            )
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Efficient Frontier Chart
+        st.markdown('<h3 class="sub-header">Efficient Frontier Visualization</h3>', unsafe_allow_html=True)
+        
+        fig = plot_efficient_frontier(
+            analysis_results['efficient_frontier'],
+            analysis_results['random_portfolios'],
+            analysis_results['current_portfolio'],
+            analysis_results['optimal_portfolios'],
+            analysis_results['asset_metrics']
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.markdown("""
+        <div class="info-box">
+            <strong>📊 Chart Legend:</strong><br>
+            • <strong>Random Portfolios</strong> (colored points): 5,000 simulated portfolio combinations<br>
+            • <strong>Efficient Frontier</strong> (red line): Optimal risk-return combinations<br>
+            • <strong>Current Portfolio</strong> (cyan star): Your current allocation<br>
+            • <strong>Max Sharpe</strong> (yellow diamond): Optimal risk-adjusted returns<br>
+            • <strong>Min Volatility</strong> (green square): Lowest risk portfolio<br>
+            • <strong>Individual Assets</strong> (purple circles): Single asset positions
+        </div>
+        """, unsafe_allow_html=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Optimal Portfolio Weights
+        tab1, tab2, tab3 = st.tabs(["⭐ Max Sharpe Weights", "🛡️ Min Vol Weights", "📊 Current Weights"])
+        
+        with tab1:
+            st.markdown("### Optimal Weights for Maximum Sharpe Ratio")
+            weights_df = pd.DataFrame({
+                'Asset': [asset['ticker'] for asset in assets_info],
+                'Name': [asset['name'] for asset in assets_info],
+                'Optimal Weight': max_sharpe['weights'] * 100,
+                'Current Weight': current_weights * 100,
+                'Difference': (max_sharpe['weights'] - current_weights) * 100
+            })
+            
+            st.dataframe(
+                weights_df.style.format({
+                    'Optimal Weight': '{:.2f}%',
+                    'Current Weight': '{:.2f}%',
+                    'Difference': '{:+.2f}%'
+                }),
+                use_container_width=True,
+                hide_index=True
+            )
+            
+            # Bar chart comparison
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                name='Current',
+                x=weights_df['Asset'],
+                y=weights_df['Current Weight'],
+                marker_color='#94a3b8'
+            ))
+            fig.add_trace(go.Bar(
+                name='Optimal (Max Sharpe)',
+                x=weights_df['Asset'],
+                y=weights_df['Optimal Weight'],
+                marker_color='#FFD93D'
+            ))
+            fig.update_layout(
+                title='Weight Comparison: Current vs Max Sharpe',
+                yaxis_title='Weight (%)',
+                barmode='group',
+                height=400,
+                template='plotly_white'
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with tab2:
+            st.markdown("### Optimal Weights for Minimum Volatility")
+            weights_df = pd.DataFrame({
+                'Asset': [asset['ticker'] for asset in assets_info],
+                'Name': [asset['name'] for asset in assets_info],
+                'Optimal Weight': min_vol['weights'] * 100,
+                'Current Weight': current_weights * 100,
+                'Difference': (min_vol['weights'] - current_weights) * 100
+            })
+            
+            st.dataframe(
+                weights_df.style.format({
+                    'Optimal Weight': '{:.2f}%',
+                    'Current Weight': '{:.2f}%',
+                    'Difference': '{:+.2f}%'
+                }),
+                use_container_width=True,
+                hide_index=True
+            )
+            
+            # Bar chart comparison
+            fig = go.Figure()
+            fig.add_trace(go.Bar(
+                name='Current',
+                x=weights_df['Asset'],
+                y=weights_df['Current Weight'],
+                marker_color='#94a3b8'
+            ))
+            fig.add_trace(go.Bar(
+                name='Optimal (Min Vol)',
+                x=weights_df['Asset'],
+                y=weights_df['Optimal Weight'],
+                marker_color='#95E1D3'
+            ))
+            fig.update_layout(
+                title='Weight Comparison: Current vs Min Volatility',
+                yaxis_title='Weight (%)',
+                barmode='group',
+                height=400,
+                template='plotly_white'
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        
+        with tab3:
+            st.markdown("### Current Portfolio Weights")
+            current_df = pd.DataFrame({
+                'Asset': [asset['ticker'] for asset in assets_info],
+                'Name': [asset['name'] for asset in assets_info],
+                'Weight': current_weights * 100,
+                'Initial Weight': [asset['initial_weight'] * 100 for asset in assets_info],
+                'Drift': (current_weights * 100) - np.array([asset['initial_weight'] * 100 for asset in assets_info])
+            })
+            
+            st.dataframe(
+                current_df.style.format({
+                    'Weight': '{:.2f}%',
+                    'Initial Weight': '{:.2f}%',
+                    'Drift': '{:+.2f}%'
+                }),
+                use_container_width=True,
+                hide_index=True
+            )
+        
+        # Expected Returns and Risk by Asset
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<h3 class="sub-header">Individual Asset Risk-Return Profile</h3>', unsafe_allow_html=True)
+        
+        asset_metrics_display = analysis_results['asset_metrics'].copy()
+        asset_metrics_display['return'] = asset_metrics_display['return'] * 100
+        asset_metrics_display['volatility'] = asset_metrics_display['volatility'] * 100
+        
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            st.dataframe(
+                asset_metrics_display.style.format({
+                    'return': '{:.2f}%',
+                    'volatility': '{:.2f}%'
+                }).background_gradient(subset=['return'], cmap='RdYlGn'),
+                use_container_width=True
+            )
+        
+        with col2:
+            st.markdown("""
+            **Expected Returns** are calculated from historical data and annualized.
+            
+            **Volatility** measures the standard deviation of returns (risk).
+            
+            Higher return often comes with higher volatility.
+            """)
+        
+    except Exception as e:
+        st.error(f"Error performing Markowitz analysis: {e}")
+        import traceback
+        st.code(traceback.format_exc())
 
 
 def show_settings():

@@ -13,6 +13,15 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from config import settings
 from core.loader import fetch_market_data, save_price_data
 
+"""
+This script fetches extended historical price data for all portfolio assets.
+It is intended to be run before launching the dashboard to provide at least 6 months
+of price history prior to the project start date, enabling richer analytics and
+visualizations. The script will download data for all tickers defined in the project
+settings, starting from 6 months before the official project start date up to today,
+and save the results to the project's prices CSV file.
+"""
+
 def fetch_extended_historical_data():
     """
     Fetch extended historical data for portfolio analysis.
@@ -22,7 +31,6 @@ def fetch_extended_historical_data():
     print("FETCHING EXTENDED HISTORICAL DATA")
     print("=" * 60)
     print()
-    
     # Calculate extended start date (6 months before project start)
     project_start = datetime.strptime(settings.START_DATE, '%Y-%m-%d')
     extended_start = project_start - timedelta(days=180)  # ~6 months
