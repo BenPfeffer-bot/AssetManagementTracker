@@ -20,8 +20,11 @@ This project tracks a diversified portfolio consisting of:
 - **Real-time Data Fetching:** Uses yfinance to fetch historical and current market data
 - **Performance Analytics:** Calculate returns, volatility, Sharpe ratio, and maximum drawdown
 - **Risk Metrics:** Correlation analysis, VaR, CVaR, and downside deviation
+- **Portfolio Builder:** 🆕 Interactive tool to experiment with different assets, compare expected returns, and optimize allocations
+- **Markowitz Optimization:** Efficient frontier analysis and optimal portfolio recommendations
 - **Professional Visualizations:** Portfolio evolution, asset allocation, correlation heatmaps, and more
 - **Automated Reports:** Generate comprehensive one-page performance reports
+- **Interactive Dashboard:** Modern Streamlit web interface with real-time updates
 
 ## Installation
 
@@ -89,6 +92,8 @@ The dashboard will automatically open in your browser at `http://localhost:8501`
 - 📈 Interactive charts with Plotly
 - 💼 Detailed holdings analysis
 - 📉 Risk analytics and correlation matrices
+- 🔧 **Portfolio Builder** - NEW! Experiment with different assets and see expected returns
+- 🎯 Markowitz optimization with efficient frontier visualization
 - 📥 Data export capabilities
 - 🔄 One-click data refresh
 
@@ -120,6 +125,42 @@ python main.py --all
 ```
 
 This command fetches the latest data and generates a report in one step.
+
+## 🔧 Portfolio Builder (New Feature!)
+
+The **Portfolio Builder** is an interactive tool that allows you to:
+
+1. **Experiment with Different Assets**
+   - Add any stock, bond, or ETF by ticker symbol
+   - Try popular portfolio templates (60/40, All Weather, Three Fund, etc.)
+   - Build completely custom portfolios from scratch
+
+2. **Compare Expected Returns**
+   - See expected returns, volatility, and Sharpe ratios
+   - Compare your custom portfolio with the current portfolio
+   - View side-by-side performance metrics
+
+3. **Optimize Allocations**
+   - Run full Markowitz optimization analysis
+   - Visualize the efficient frontier
+   - Get optimal weight recommendations
+
+4. **Backtest Performance**
+   - See how your portfolio would have performed historically
+   - Compare multiple portfolio strategies
+   - Analyze asset correlations and diversification
+
+**Quick Start:**
+1. Launch the dashboard: `streamlit run app.py`
+2. Click **🔧 Portfolio Builder** in the sidebar
+3. Choose a template or add assets manually
+4. Click **🚀 Analyze Portfolio**
+5. Review the comprehensive analysis
+
+**Documentation:**
+- `docs/PORTFOLIO_BUILDER_QUICKSTART.md` - 60-second quick start
+- `docs/PORTFOLIO_BUILDER_GUIDE.md` - Comprehensive user guide
+- `docs/PORTFOLIO_BUILDER_FEATURE.md` - Technical implementation details
 
 ## Performance Metrics
 
