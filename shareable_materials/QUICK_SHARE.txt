@@ -1,0 +1,84 @@
+═══════════════════════════════════════════════════════════════
+        📊 PORTFOLIO TRACKER DASHBOARD - ACCESS INFO
+═══════════════════════════════════════════════════════════════
+
+🌐 DIRECT LINK:
+https://benpfeffer-bot-assetmanagementtracker-app-t75mzr.streamlit.app/
+
+📱 MOBILE QR CODE:
+   See qr_code_branded.png in this folder
+
+💻 DESKTOP ACCESS:
+   1. Open any browser
+   2. Copy the link above
+   3. Paste and press Enter
+   4. Explore the dashboard!
+
+📧 EMAIL TEMPLATE (Copy & Paste):
+───────────────────────────────────────────────────────────────
+Subject: Portfolio Tracker Dashboard Access
+
+Hi,
+
+Check out this Portfolio Tracker Dashboard:
+https://benpfeffer-bot-assetmanagementtracker-app-t75mzr.streamlit.app/
+
+Features:
+• Real-time portfolio tracking
+• Markowitz optimization
+• Interactive rebalancing
+• Custom portfolio builder
+• Weekly reports
+
+Scan the attached QR code for mobile access!
+───────────────────────────────────────────────────────────────
+
+📱 TEXT MESSAGE (Copy & Paste):
+───────────────────────────────────────────────────────────────
+📊 Portfolio Tracker:
+https://benpfeffer-bot-assetmanagementtracker-app-t75mzr.streamlit.app/
+
+Or scan this QR code 👇 [attach qr_code_branded.png]
+───────────────────────────────────────────────────────────────
+
+🌐 SOCIAL MEDIA POST (LinkedIn/Twitter):
+───────────────────────────────────────────────────────────────
+🚀 Check out this Portfolio Tracker Dashboard!
+
+Track & optimize your investment portfolio with:
+📈 Real-time monitoring
+🎯 Markowitz optimization
+⚖️ Interactive rebalancing
+📊 Professional analytics
+
+Try it: https://benpfeffer-bot-assetmanagementtracker-app-t75mzr.streamlit.app/
+
+#Portfolio #FinTech #Investment #DataAnalytics
+───────────────────────────────────────────────────────────────
+
+✨ KEY FEATURES:
+• Real-time portfolio tracking
+• Markowitz Modern Portfolio Theory optimization
+• Interactive rebalancing tools
+• Risk analytics (Sharpe, VaR, CVaR)
+• Custom portfolio builder
+• Weekly PDF reports
+• Efficient frontier visualization
+• Asset correlation analysis
+
+💡 QUICK TIPS:
+• No login required
+• Works on all devices
+• Instant access via QR code
+• Free to use
+• Always available (24/7)
+
+🔒 PRIVACY:
+• Public demo with sample data
+• No personal information required
+• Secure Streamlit Cloud hosting
+
+═══════════════════════════════════════════════════════════════
+         Ready to share! Pick your favorite method above 🚀
+═══════════════════════════════════════════════════════════════
+
