@@ -252,7 +252,7 @@ def main():
         st.markdown("### 📍 Navigation")
         page = st.radio(
             "Select Page",
-            ["🏠 Dashboard", "📊 Analytics", "💼 Holdings", "📈 Markowitz", "🔧 Portfolio Builder", "📧 Weekly Report", "📊 Data Explorer", "⚙️ Settings"],
+            ["🏠 Dashboard", "📊 Analytics", "💼 Holdings", "📈 Markowitz", "🎯 Rebalance Portfolio", "🔧 Portfolio Builder", "📧 Weekly Report", "📊 Data Explorer", "⚙️ Settings"],
             label_visibility="collapsed"
         )
         
@@ -299,6 +299,8 @@ def main():
         show_holdings(assets_info, portfolio, price_data)
     elif page == "📈 Markowitz":
         show_markowitz(assets_info, price_data, portfolio)
+    elif page == "🎯 Rebalance Portfolio":
+        show_rebalance_portfolio(assets_info, price_data, portfolio)
     elif page == "🔧 Portfolio Builder":
         show_portfolio_builder(assets_info, price_data, portfolio)
     elif page == "📧 Weekly Report":
@@ -832,12 +834,12 @@ def show_markowitz(assets_info, price_data, portfolio):
     """Markowitz Modern Portfolio Theory analysis page"""
     st.markdown('<p class="main-header">📈 Markowitz Portfolio Analysis</p>', unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class="info-box">
-        <strong>Modern Portfolio Theory (MPT)</strong> by Harry Markowitz shows the relationship between risk and return.
-        The <strong>Efficient Frontier</strong> represents optimal portfolios offering the highest expected return for a given level of risk.
-    </div>
-    """, unsafe_allow_html=True)
+    # st.markdown("""
+    # <div class="info-box">
+    #     <strong>Modern Portfolio Theory (MPT)</strong> by Harry Markowitz shows the relationship between risk and return.
+    #     The <strong>Efficient Frontier</strong> represents optimal portfolios offering the highest expected return for a given level of risk.
+    # </div>
+    # """, unsafe_allow_html=True)
     
     try:
         # Get current weights
@@ -1320,17 +1322,364 @@ def show_markowitz(assets_info, price_data, portfolio):
         st.code(traceback.format_exc())
 
 
+def show_rebalance_portfolio(assets_info, price_data, portfolio):
+    """Interactive portfolio allocation manager"""
+    st.markdown('<p class="main-header">🎯 Rebalance Portfolio Allocation</p>', unsafe_allow_html=True)
+    
+    st.markdown("""
+    <div class="info-box">
+        <strong>💡 Adjust Your Portfolio</strong><br>
+        Modify your portfolio allocation by adjusting weights for each asset.
+        See the impact in real-time and save changes when ready.
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Initialize session state for allocation changes
+    if 'allocation_modified' not in st.session_state:
+        st.session_state.allocation_modified = False
+    
+    if 'new_weights' not in st.session_state:
+        st.session_state.new_weights = {asset['ticker']: asset['initial_weight'] for asset in assets_info}
+    
+    if 'new_prices' not in st.session_state:
+        # Get latest prices from data
+        latest_prices = {col: price_data[col].iloc[-1] for col in price_data.columns}
+        st.session_state.new_prices = latest_prices
+    
+    # Two column layout
+    col1, col2 = st.columns([3, 2])
+    
+    with col1:
+        st.markdown('<h3 class="sub-header">📊 Current Allocation</h3>', unsafe_allow_html=True)
+        
+        # Display current allocation table
+        current_allocation_data = []
+        for asset in assets_info:
+            current_allocation_data.append({
+                'Ticker': asset['ticker'],
+                'Name': asset['name'],
+                'Class': asset['asset_class'],
+                'Current Weight': f"{asset['initial_weight']*100:.1f}%",
+                'Current Price': f"${asset['initial_price']:.2f}"
+            })
+        
+        current_df = pd.DataFrame(current_allocation_data)
+        st.dataframe(current_df, width='stretch', hide_index=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Allocation adjustment section
+        st.markdown('<h3 class="sub-header">⚖️ Adjust Weights</h3>', unsafe_allow_html=True)
+        
+        st.markdown("Use the sliders below to adjust your portfolio allocation:")
+        
+        # Create sliders for each asset
+        for asset in assets_info:
+            ticker = asset['ticker']
+            col_a, col_b = st.columns([3, 1])
+            
+            with col_a:
+                new_weight = st.slider(
+                    f"{ticker} - {asset['name']}",
+                    min_value=0.0,
+                    max_value=100.0,
+                    value=st.session_state.new_weights[ticker] * 100,
+                    step=0.5,
+                    key=f"weight_slider_{ticker}",
+                    help=f"Adjust allocation for {asset['name']}"
+                )
+                st.session_state.new_weights[ticker] = new_weight / 100
+            
+            with col_b:
+                st.metric("", f"{new_weight:.1f}%", 
+                         delta=f"{(new_weight - asset['initial_weight']*100):+.1f}%")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Price adjustment section
+        with st.expander("💰 Update Asset Prices (Optional)", expanded=False):
+            st.markdown("Update prices to reflect current market values:")
+            
+            col_price1, col_price2 = st.columns(2)
+            
+            for idx, asset in enumerate(assets_info):
+                ticker = asset['ticker']
+                col = col_price1 if idx % 2 == 0 else col_price2
+                
+                with col:
+                    new_price = st.number_input(
+                        f"{ticker} Price ($)",
+                        min_value=0.01,
+                        value=float(st.session_state.new_prices.get(ticker, asset['initial_price'])),
+                        step=0.01,
+                        key=f"price_{ticker}",
+                        format="%.2f"
+                    )
+                    st.session_state.new_prices[ticker] = new_price
+            
+            if st.button("🔄 Fetch Latest Prices from Market", use_container_width=True):
+                with st.spinner("Fetching latest prices..."):
+                    try:
+                        latest_prices = {col: price_data[col].iloc[-1] for col in price_data.columns}
+                        st.session_state.new_prices = latest_prices
+                        st.success("✅ Prices updated from latest market data!")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Error fetching prices: {e}")
+    
+    with col2:
+        st.markdown('<h3 class="sub-header">📈 Allocation Summary</h3>', unsafe_allow_html=True)
+        
+        # Calculate total weight
+        total_weight = sum(st.session_state.new_weights.values())
+        
+        # Weight status
+        if abs(total_weight - 1.0) < 0.001:
+            st.success(f"✅ Total: {total_weight*100:.1f}%")
+        elif total_weight < 1.0:
+            st.warning(f"⚠️ Total: {total_weight*100:.1f}% (Under-allocated)")
+        else:
+            st.error(f"❌ Total: {total_weight*100:.1f}% (Over-allocated)")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Visual comparison
+        st.markdown("##### 📊 Weight Comparison")
+        
+        comparison_data = []
+        for asset in assets_info:
+            ticker = asset['ticker']
+            comparison_data.append({
+                'Asset': ticker,
+                'Current': asset['initial_weight'] * 100,
+                'New': st.session_state.new_weights[ticker] * 100,
+                'Change': (st.session_state.new_weights[ticker] - asset['initial_weight']) * 100
+            })
+        
+        comparison_df = pd.DataFrame(comparison_data)
+        
+        # Create comparison chart
+        fig = go.Figure()
+        
+        fig.add_trace(go.Bar(
+            name='Current',
+            x=comparison_df['Asset'],
+            y=comparison_df['Current'],
+            marker_color='#94a3b8'
+        ))
+        
+        fig.add_trace(go.Bar(
+            name='New',
+            x=comparison_df['Asset'],
+            y=comparison_df['New'],
+            marker_color='#667eea'
+        ))
+        
+        fig.update_layout(
+            barmode='group',
+            height=300,
+            template='plotly_white',
+            xaxis_title="Asset",
+            yaxis_title="Weight (%)",
+            legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="center", x=0.5),
+            margin=dict(l=20, r=20, t=40, b=20)
+        )
+        
+        st.plotly_chart(fig, use_container_width=True)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Changes summary
+        st.markdown("##### 📋 Changes Summary")
+        
+        changes_summary = []
+        for asset in assets_info:
+            ticker = asset['ticker']
+            old_weight = asset['initial_weight']
+            new_weight = st.session_state.new_weights[ticker]
+            change = new_weight - old_weight
+            
+            if abs(change) > 0.001:
+                emoji = "📈" if change > 0 else "📉"
+                changes_summary.append(f"{emoji} **{ticker}**: {old_weight*100:.1f}% → {new_weight*100:.1f}% ({change*100:+.1f}%)")
+        
+        if changes_summary:
+            for summary in changes_summary:
+                st.markdown(summary)
+        else:
+            st.info("No changes made yet")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Action buttons
+        col_a, col_b = st.columns(2)
+        
+        with col_a:
+            if st.button("↩️ Reset", use_container_width=True):
+                st.session_state.new_weights = {asset['ticker']: asset['initial_weight'] for asset in assets_info}
+                latest_prices = {col: price_data[col].iloc[-1] for col in price_data.columns}
+                st.session_state.new_prices = latest_prices
+                st.success("✅ Reset to original values")
+                st.rerun()
+        
+        with col_b:
+            if st.button("⚖️ Normalize", use_container_width=True):
+                if total_weight > 0:
+                    for ticker in st.session_state.new_weights:
+                        st.session_state.new_weights[ticker] = st.session_state.new_weights[ticker] / total_weight
+                    st.success("✅ Weights normalized to 100%")
+                    st.rerun()
+    
+    # Analysis and Save Section
+    if abs(total_weight - 1.0) < 0.02:  # Allow 2% tolerance
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.markdown('<h3 class="sub-header">🔍 Impact Analysis</h3>', unsafe_allow_html=True)
+        
+        # Calculate asset class changes
+        col1, col2, col3 = st.columns(3)
+        
+        # Calculate current asset class allocations
+        current_equity = sum(asset['initial_weight'] for asset in assets_info if asset['asset_class'] == 'Equities')
+        current_fixed = sum(asset['initial_weight'] for asset in assets_info if asset['asset_class'] == 'Fixed Income')
+        current_commodities = sum(asset['initial_weight'] for asset in assets_info if asset['asset_class'] == 'Commodities')
+        
+        # Calculate new asset class allocations
+        new_equity = sum(st.session_state.new_weights[asset['ticker']] for asset in assets_info if asset['asset_class'] == 'Equities')
+        new_fixed = sum(st.session_state.new_weights[asset['ticker']] for asset in assets_info if asset['asset_class'] == 'Fixed Income')
+        new_commodities = sum(st.session_state.new_weights[asset['ticker']] for asset in assets_info if asset['asset_class'] == 'Commodities')
+        
+        with col1:
+            st.metric(
+                "📈 Equities",
+                f"{new_equity*100:.1f}%",
+                delta=f"{(new_equity - current_equity)*100:+.1f}%"
+            )
+        
+        with col2:
+            st.metric(
+                "🏦 Fixed Income",
+                f"{new_fixed*100:.1f}%",
+                delta=f"{(new_fixed - current_fixed)*100:+.1f}%"
+            )
+        
+        with col3:
+            st.metric(
+                "🥇 Commodities",
+                f"{new_commodities*100:.1f}%",
+                delta=f"{(new_commodities - current_commodities)*100:+.1f}%"
+            )
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Risk profile assessment
+        col1, col2 = st.columns([2, 1])
+        
+        with col1:
+            # Determine risk profile
+            if new_equity >= 0.60:
+                risk_profile = "Aggressive"
+                risk_color = "#ef4444"
+                risk_desc = "High growth potential with higher volatility"
+            elif new_equity >= 0.45:
+                risk_profile = "Moderate-Aggressive"
+                risk_color = "#f59e0b"
+                risk_desc = "Balanced growth with moderate risk"
+            elif new_equity >= 0.30:
+                risk_profile = "Moderate"
+                risk_color = "#10b981"
+                risk_desc = "Balanced approach with controlled risk"
+            else:
+                risk_profile = "Conservative"
+                risk_color = "#3b82f6"
+                risk_desc = "Lower risk with stable returns"
+            
+            st.markdown(f"""
+            <div class="info-box" style="border-left: 4px solid {risk_color};">
+                <strong>📊 Risk Profile: {risk_profile}</strong><br>
+                {risk_desc}
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col2:
+            # Portfolio characteristics
+            st.markdown("**Portfolio Type:**")
+            if new_equity > current_equity:
+                st.markdown("📈 More Growth-Oriented")
+            elif new_equity < current_equity:
+                st.markdown("🛡️ More Conservative")
+            else:
+                st.markdown("➡️ Similar Profile")
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Save button
+        col1, col2, col3 = st.columns([1, 2, 1])
+        
+        with col2:
+            if st.button("💾 Save New Allocation", type="primary", use_container_width=True):
+                # Confirm dialog
+                st.session_state.confirm_save = True
+        
+        # Confirmation dialog
+        if hasattr(st.session_state, 'confirm_save') and st.session_state.confirm_save:
+            st.markdown("<br>", unsafe_allow_html=True)
+            
+            st.warning("⚠️ **Confirm Changes**")
+            st.markdown("This will permanently update your portfolio allocation. Are you sure?")
+            
+            col_a, col_b, col_c = st.columns([1, 1, 1])
+            
+            with col_a:
+                if st.button("✅ Yes, Save Changes", use_container_width=True):
+                    try:
+                        # Update assets_info
+                        import json
+                        
+                        for asset in assets_info:
+                            ticker = asset['ticker']
+                            asset['initial_weight'] = st.session_state.new_weights[ticker]
+                            asset['initial_price'] = st.session_state.new_prices[ticker]
+                        
+                        # Save to file
+                        with open(settings.ASSETS_INFO_PATH, 'w') as f:
+                            json.dump(assets_info, f, indent=2)
+                        
+                        st.session_state.confirm_save = False
+                        st.session_state.allocation_modified = False
+                        
+                        st.success("✅ Portfolio allocation saved successfully!")
+                        st.info("🔄 Please refresh the page to see updated allocation across all sections.")
+                        
+                        # Show what was saved
+                        st.markdown("**Saved Allocation:**")
+                        for asset in assets_info:
+                            st.markdown(f"- **{asset['ticker']}**: {asset['initial_weight']*100:.1f}% @ ${asset['initial_price']:.2f}")
+                        
+                    except Exception as e:
+                        st.error(f"❌ Error saving allocation: {str(e)}")
+            
+            with col_b:
+                if st.button("❌ Cancel", use_container_width=True):
+                    st.session_state.confirm_save = False
+                    st.rerun()
+            
+            with col_c:
+                st.markdown("")  # Spacer
+    else:
+        st.warning(f"⚠️ Please adjust weights to sum to 100% (currently {total_weight*100:.1f}%). Use the 'Normalize' button to auto-adjust.")
+
+
 def show_portfolio_builder(assets_info, price_data, portfolio):
     """Interactive Portfolio Builder - experiment with different assets"""
     st.markdown('<p class="main-header">🔧 Portfolio Builder</p>', unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class="info-box">
-        <strong>🎯 Build Your Custom Portfolio</strong><br>
-        Experiment with different stocks, bonds, and ETFs to see how they would perform.
-        Add assets, adjust weights, and compare the expected returns with your current portfolio.
-    </div>
-    """, unsafe_allow_html=True)
+    # st.markdown("""
+    # <div class="info-box">
+    #     <strong>🎯 Build Your Custom Portfolio</strong><br>
+    #     Experiment with different stocks, bonds, and ETFs to see how they would perform.
+    #     Add assets, adjust weights, and compare the expected returns with your current portfolio.
+    # </div>
+    # """, unsafe_allow_html=True)
     
     # Initialize session state for custom portfolio
     if 'custom_assets' not in st.session_state:
@@ -1800,13 +2149,13 @@ def show_weekly_report(assets_info, price_data):
     """Weekly report generation page"""
     st.markdown('<p class="main-header">📧 Weekly Report Generator</p>', unsafe_allow_html=True)
     
-    st.markdown("""
-    <div class="info-box">
-        <strong>📨 Rapport Hebdomadaire</strong><br>
-        Generate weekly PDF reports in French with closing prices to send to your teacher every Wednesday.
-        The PDF contains professional formatting with asset prices, variations, and French date formatting.
-    </div>
-    """, unsafe_allow_html=True)
+    # st.markdown("""
+    # <div class="info-box">
+    #     <strong>📨 Rapport Hebdomadaire</strong><br>
+    #     Generate weekly PDF reports in French with closing prices to send to your teacher every Wednesday.
+    #     The PDF contains professional formatting with asset prices, variations, and French date formatting.
+    # </div>
+    # """, unsafe_allow_html=True)
     
     # Initialize report generator
     report_gen = WeeklyReportGenerator(assets_info, settings.GROUP_NUMBER)
@@ -1858,11 +2207,11 @@ def show_weekly_report(assets_info, price_data):
         
         # Recipient information
         with st.expander("✉️ Email Configuration", expanded=False):
-            recipient_email = st.text_input(
-                "Recipient Email",
-                value=settings.TEACHER_EMAIL,
-                help="Email address of the teacher"
-            )
+            # recipient_email = st.text_input(
+            #     "Recipient Email",
+            #     value=settings.TEACHER_EMAIL,
+            #     help="Email address of the teacher"
+            # )
             
             group_number = st.number_input(
                 "Group Number",
@@ -1872,7 +2221,7 @@ def show_weekly_report(assets_info, price_data):
                 help="Your group number"
             )
             
-            report_gen.recipient_email = recipient_email
+            # report_gen.recipient_email = recipient_email
             report_gen.group_number = int(group_number)
     
     with col2:
@@ -1889,12 +2238,12 @@ def show_weekly_report(assets_info, price_data):
         st.markdown("<br>", unsafe_allow_html=True)
         
         # Quick info
-        st.markdown("""
-        **Report Schedule:**
-        - Frequency: Weekly
-        - Day: Wednesday
-        - Recipient: ckharoubi@escp.eu
-        """)
+        # st.markdown("""
+        # **Report Schedule:**
+        # - Frequency: Weekly
+        # - Day: Wednesday
+        # - Recipient: ckharoubi@escp.eu
+        # """)
     
     st.markdown("<br>", unsafe_allow_html=True)
     
@@ -2068,20 +2417,20 @@ def show_weekly_report(assets_info, price_data):
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown("---")
             
-            # Instructions
-            st.markdown("##### 📧 How to Send the PDF")
-            st.markdown("""
-            1. Click **"Generate PDF Document"** above
-            2. Click **"Download PDF"** to save to your computer
-            3. Open your email client (Gmail, Outlook, etc.)
-            4. Compose new email to: **`ckharoubi@escp.eu`**
-            5. Subject: **`Suivi de portefeuille - {}`**
-            6. Attach the downloaded PDF file
-            7. Add a brief message (optional)
-            8. Send!
+            # # Instructions
+            # st.markdown("##### 📧 How to Send the PDF")
+            # st.markdown("""
+            # 1. Click **"Generate PDF Document"** above
+            # 2. Click **"Download PDF"** to save to your computer
+            # 3. Open your email client (Gmail, Outlook, etc.)
+            # 4. Compose new email to: **`ckharoubi@escp.eu`**
+            # 5. Subject: **`Suivi de portefeuille - {}`**
+            # 6. Attach the downloaded PDF file
+            # 7. Add a brief message (optional)
+            # 8. Send!
             
-            **The PDF contains all the information in a professional format.**
-            """.format(report_gen.format_french_date(st.session_state.report_date)))
+            # **The PDF contains all the information in a professional format.**
+            # """.format(report_gen.format_french_date(st.session_state.report_date)))
         
         with tab4:
             st.markdown("##### 📤 Additional Download Options")
@@ -2112,14 +2461,14 @@ def show_weekly_report(assets_info, price_data):
             st.markdown("<br>", unsafe_allow_html=True)
             st.markdown("---")
             
-            st.markdown("**📋 Copy for Email Body**")
-            st.markdown("""
-            If you prefer to paste the report directly into an email body:
-            1. Go to the **📄 Plain Text** tab
-            2. Copy the text
-            3. Paste into your email
-            4. Send to `ckharoubi@escp.eu`
-            """)
+            # st.markdown("**📋 Copy for Email Body**")
+            # st.markdown("""
+            # If you prefer to paste the report directly into an email body:
+            # 1. Go to the **📄 Plain Text** tab
+            # 2. Copy the text
+            # 3. Paste into your email
+            # 4. Send to `ckharoubi@escp.eu`
+            # """)
     
     # Historical reports section
     st.markdown("<br><br>", unsafe_allow_html=True)
@@ -2183,13 +2532,13 @@ def show_settings():
         st.markdown('<h3 class="sub-header">Project Configuration</h3>', unsafe_allow_html=True)
         
         config_data = {
-            'Parameter': ['Start Date', 'End Date', 'Initial Capital', 'Risk-Free Rate', 'Report Frequency'],
+            'Parameter': ['Start Date', 'End Date', 'Initial Capital'],
             'Value': [
                 settings.START_DATE,
                 settings.END_DATE,
                 f"${settings.INITIAL_CAPITAL:,.0f}",
-                f"{settings.RISK_FREE_RATE*100:.1f}%",
-                'Weekly'
+                # f"{settings.RISK_FREE_RATE*100:.1f}%",
+                # 'Weekly'
             ]
         }
         
