@@ -17,7 +17,7 @@ ASSET_TICKERS = ['QQQ', 'IEMG', 'SHV', 'TLT', 'IAU']
 REPORT_FREQUENCY = 'weekly'  # weekly reporting
 
 # Risk-free rate for Sharpe ratio calculation (annualized)
-RISK_FREE_RATE = 0.05  # 5% annualized
+RISK_FREE_RATE = 0.04  # 5% annualized
 
 # File paths
 ASSETS_INFO_PATH = 'data/assets_info.json'
