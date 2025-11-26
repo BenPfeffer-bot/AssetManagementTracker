@@ -132,7 +132,7 @@ def calculate_downside_deviation(returns_series: pd.Series, target_return: float
     return downside_deviation
 
 
-def calculate_sortino_ratio(returns_series: pd.Series, risk_free_rate: float = 0.05, 
+def calculate_sortino_ratio(returns_series: pd.Series, risk_free_rate: float = 0.04, 
                             target_return: float = 0) -> float:
     """
     Calculate Sortino ratio (return-to-downside-risk ratio).

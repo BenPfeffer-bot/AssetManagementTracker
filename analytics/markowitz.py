@@ -30,7 +30,7 @@ def calculate_portfolio_performance(weights: np.ndarray, mean_returns: np.ndarra
 
 
 def negative_sharpe_ratio(weights: np.ndarray, mean_returns: np.ndarray, 
-                          cov_matrix: np.ndarray, risk_free_rate: float = 0.05) -> float:
+                          cov_matrix: np.ndarray, risk_free_rate: float = 0.04) -> float:
     """
     Calculate negative Sharpe ratio (for minimization).
     
@@ -69,7 +69,7 @@ def portfolio_volatility(weights: np.ndarray, mean_returns: np.ndarray,
 
 
 def optimize_portfolio(mean_returns: np.ndarray, cov_matrix: np.ndarray, 
-                      objective: str = 'sharpe', risk_free_rate: float = 0.05) -> Dict:
+                      objective: str = 'sharpe', risk_free_rate: float = 0.04) -> Dict:
     """
     Optimize portfolio using mean-variance optimization.
     
@@ -122,7 +122,7 @@ def optimize_portfolio(mean_returns: np.ndarray, cov_matrix: np.ndarray,
 
 def generate_efficient_frontier(mean_returns: np.ndarray, cov_matrix: np.ndarray, 
                                num_portfolios: int = 100, 
-                               risk_free_rate: float = 0.05) -> pd.DataFrame:
+                               risk_free_rate: float = 0.04) -> pd.DataFrame:
     """
     Generate efficient frontier by optimizing portfolios at different target returns.
     
@@ -183,7 +183,7 @@ def generate_efficient_frontier(mean_returns: np.ndarray, cov_matrix: np.ndarray
 
 def generate_random_portfolios(mean_returns: np.ndarray, cov_matrix: np.ndarray, 
                                num_portfolios: int = 5000,
-                               risk_free_rate: float = 0.05) -> pd.DataFrame:
+                               risk_free_rate: float = 0.04) -> pd.DataFrame:
     """
     Generate random portfolio allocations for Monte Carlo simulation.
     
@@ -410,7 +410,7 @@ def plot_efficient_frontier(efficient_frontier: pd.DataFrame,
 
 
 def analyze_portfolio_markowitz(price_data: pd.DataFrame, current_weights: np.ndarray,
-                                risk_free_rate: float = 0.05) -> Dict:
+                                risk_free_rate: float = 0.04) -> Dict:
     """
     Complete Markowitz analysis of portfolio.
     

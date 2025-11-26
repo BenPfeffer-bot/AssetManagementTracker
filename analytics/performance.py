@@ -52,7 +52,7 @@ def calculate_volatility(returns_series: pd.Series, annualize: bool = True) -> f
     return volatility
 
 
-def calculate_sharpe_ratio(returns_series: pd.Series, risk_free_rate: float = 0.05) -> float:
+def calculate_sharpe_ratio(returns_series: pd.Series, risk_free_rate: float = 0.04) -> float:
     """
     Calculate the Sharpe ratio.
     
